@@ -1,77 +1,75 @@
-/* eslint-disable no-unused-vars */
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import axios from '../api/axios';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [accessToken, setAccessToken] = useState(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+    return token;
+  });
 
-  // Cargar usuario actual
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get('/auth/user/');
-        setUser(response.data);
-      } catch (error) {
-        if (error.response?.status !== 401) {
-          console.error('Error inesperado al verificar usuario:', error);
-        }
-        setUser(null);
-      }
-    };
-  
-    fetchUser();
+  // Obtener usuario autenticado
+  const fetchUser = useCallback(async () => {
+    try {
+      const res = await axios.get('/auth/user/');
+      setUser(res.data);
+    } catch (err) {
+      console.error('[AUTH] Usuario no autenticado:', err.response?.data || err);
+      logout(); // Limpiar si token ya no es válido
+    }
   }, []);
-  
-  
-  const login = async (credentials) => {
+
+  // Verificar sesión al montar el proveedor
+  useEffect(() => {
+    if (accessToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      fetchUser();
+    }
+  }, [accessToken, fetchUser]);
+
+  // Login
+  const login = async ({ username, password }) => {
     try {
-      const res = await axios.post('/auth/login/', credentials);
-      // No guardamos token: asumimos que la sesión está manejada por el backend
-      const userResponse = await axios.get('/auth/user/');
-      setUser(userResponse.data);
-      setError(null);
-      navigate('/products');
+      const res = await axios.post('/auth/token/', { username, password });
+      const { access } = res.data;
+
+      // Guardar token
+      localStorage.setItem('accessToken', access);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+      setAccessToken(access);
+
+      await fetchUser();
       return { success: true };
     } catch (err) {
-      setError('Credenciales inválidas');
-      return { success: false };
+      console.error('[AUTH] Error al iniciar sesión:', err.response?.data || err);
+      return { success: false, message: err.response?.data?.detail || 'Error desconocido' };
     }
   };
 
-  const register = async (userData) => {
-    try {
-      await axios.post('/auth/register/', userData);
-      navigate('/login');
-      return { success: true };
-    } catch (err) {
-      setError('Error al registrarse');
-      return { success: false };
-    }
-  };
-
+  // Logout
   const logout = () => {
+    localStorage.removeItem('accessToken');
+    setAccessToken(null);
     setUser(null);
-    navigate('/login');
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      error,
-      login,
-      register,
-      logout,
-      isAuthenticated: !!user
-    }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  }
+  return context;
+};

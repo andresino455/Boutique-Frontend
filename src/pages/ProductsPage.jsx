@@ -14,15 +14,6 @@ const ProductsPage = () => {
     search: '',
     sort: 'newest'
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 10;
-
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * productsPerPage,
-    currentPage * productsPerPage
-  );
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -32,27 +23,34 @@ const ProductsPage = () => {
   };
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch products data
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const productsRes = await axios.get('/products/');
-        setProducts(productsRes.data);
-        setFilteredProducts(productsRes.data);
+        const res = await axios.get(`/store/products/?page=${currentPage}`);
 
-        // Extract unique categories
-        const uniqueCategories = [...new Set(productsRes.data.map(item => item.category))].filter(Boolean);
+        setProducts(res.data.results);
+        setFilteredProducts(res.data.results);
+
+        const total = Math.ceil(res.data.count / 10); // suponiendo 10 por página
+        setTotalPages(total);
+
+        const uniqueCategories = [
+          ...new Map(res.data.results.map(item => [item.category?.id, item.category])).values()
+        ].filter(Boolean);
         setCategories(uniqueCategories);
-      } catch (error) {
-        console.error('Error fetching products:', error);
+      } catch (err) {
+        console.error('Error fetching products:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   // Apply filters when they change
   useEffect(() => {
@@ -69,7 +67,7 @@ const ProductsPage = () => {
 
     // Apply category filter
     if (filters.category) {
-      result = result.filter(product => product.category === filters.category);
+      result = result.filter(product => product.category?.id === Number(filters.category));
     }
 
     // Apply price range filter
@@ -266,15 +264,15 @@ const ProductsPage = () => {
                   </label>
 
                   {categories.map(category => (
-                    <label key={category} className="flex items-center">
+                    <label key={category.id} className="flex items-center">
                       <input
                         type="radio"
                         name="category"
-                        checked={filters.category === category}
-                        onChange={() => handleFilterChange('category', category)}
+                        checked={filters.category === category.id}
+                        onChange={() => handleFilterChange('category', category.id)}
                         className="mr-2 accent-emerald-600"
                       />
-                      <span>{category}</span>
+                      <span>{category.name}</span>
                     </label>
                   ))}
                 </div>
@@ -379,17 +377,18 @@ const ProductsPage = () => {
                 </label>
 
                 {categories.map(category => (
-                  <label key={category} className="flex items-center">
+                  <label key={category.id} className="flex items-center">
                     <input
                       type="radio"
                       name="category"
-                      checked={filters.category === category}
-                      onChange={() => handleFilterChange('category', category)}
+                      checked={filters.category === category.id}
+                      onChange={() => handleFilterChange('category', category.id)}
                       className="mr-2 accent-emerald-600"
                     />
-                    <span>{category}</span>
+                    <span>{category.name}</span>
                   </label>
                 ))}
+
               </div>
             </div>
 
@@ -465,12 +464,10 @@ const ProductsPage = () => {
         <div className="flex-1">
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                />
+              {filteredProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
               ))}
+
 
             </div>
           ) : (

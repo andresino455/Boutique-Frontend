@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'; // Añadimos 
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, User, Menu, X, LogOut, Heart } from 'lucide-react';
-import axios from '../api/axios';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -19,7 +18,6 @@ const Navbar = () => {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      await axios.post('/auth/logout/');
       logout();
       navigate('/login');
       setIsMenuOpen(false);

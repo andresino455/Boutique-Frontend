@@ -10,8 +10,8 @@ const Orders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get('/my-orders/');
-        setOrders(res.data);
+        const res = await axios.get('/orders/');
+        setOrders(res.data.results ?? res.data);
       } catch (err) {
         console.error('Error al cargar pedidos:', err);
       }
@@ -35,18 +35,22 @@ const Orders = () => {
                   <h2 className="text-lg font-semibold">Pedido #{order.id}</h2>
                   <p className="text-sm text-gray-500">Fecha: {new Date(order.created_at).toLocaleDateString()}</p>
                   <p className="text-sm text-gray-500">Envío: {order.shipping_address}</p>
-                  <p className="text-sm text-gray-500">Método de pago: {order.payment_method}</p>
+                  <p className="text-sm text-gray-500">Método de pago: {order.payment?.method || '---'}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-emerald-600 font-bold text-lg">${parseFloat(order.total).toFixed(2)}</span>
-                  <div className="text-sm text-gray-600">{order.status}</div>
+                  <span className="text-emerald-600 font-bold text-lg">
+                    ${parseFloat(order.total_price).toFixed(2)}
+                  </span>
+                  <div className="text-sm text-gray-600">
+                    {order.is_paid ? 'Pagado' : 'Pendiente'}
+                  </div>
                 </div>
               </div>
 
               <div className="border-t pt-3 space-y-2">
                 {order.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between text-sm text-gray-700">
-                    <span>{item.quantity} x {item.product_name}</span>
+                    <span>{item.quantity} x {item.product.name}</span>
                     <span>${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}

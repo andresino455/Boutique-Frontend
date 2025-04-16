@@ -13,7 +13,7 @@ const RelatedProducts = ({ productId }) => {
   useEffect(() => {
     const fetchRelated = async () => {
       try {
-        const res = await axios.get(`/products/${productId}/related/`);
+        const res = await axios.get(`store/products/${productId}/related/`);
         setRelated(res.data.map(prod => ({
           ...prod,
           price: Number(prod.price) || 0,
@@ -53,8 +53,14 @@ const RelatedProducts = ({ productId }) => {
     </div>
   );
 
-  if (related.length === 0) return null;
-
+  if (related.length === 0) {
+    return (
+      <div className="mt-12 text-gray-500 text-center text-sm">
+        No hay productos relacionados aún.
+      </div>
+    );
+  }
+  
   return (
     <div className="mt-12">
       <h2 className="text-xl font-semibold mb-4">También te puede interesar</h2>

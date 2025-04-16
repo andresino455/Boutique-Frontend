@@ -1,33 +1,21 @@
-// axios.js
+// src/api/axios.js
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:8000/api/',
-  withCredentials: true,  // Esto es esencial
+  baseURL: 'http://localhost:8000/api',
+  withCredentials: true, // si usas cookies (puede omitirse si sólo JWT)
 });
 
-// Interceptor para CSRF
+// Interceptor para agregar token automáticamente
 instance.interceptors.request.use(config => {
-  const csrfToken = getCookie('csrftoken');
-  if (csrfToken) {
-    config.headers['X-CSRFToken'] = csrfToken;
+  const token = localStorage.getItem('accessToken');  // 👈 importante
+  console.log('[AXIOS] Enviando token:', token);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, error => {
+  return Promise.reject(error);
 });
-
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
 
 export default instance;

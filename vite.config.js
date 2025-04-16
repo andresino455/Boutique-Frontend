@@ -9,7 +9,7 @@ export default defineConfig({
   ],
   server: {
     host: '0.0.0.0', // Escucha en todas las interfaces
-    port: 5175, // el número de puerto que desees
+    port: 5173, // el número de puerto que desees
     strictPort: true, // (opcional) evita que use otro si está ocupado
     open: true, // (opcional) abre automáticamente en el navegador
   },

@@ -19,7 +19,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`/products/${id}/`);
+        const response = await axios.get(`/store/products/${id}/`);
         const productData = {
           ...response.data,
           price: Number(response.data.price) || 0,

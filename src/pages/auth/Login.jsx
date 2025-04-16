@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
 
   const handleChange = (e) =>
@@ -14,11 +14,15 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(form); // llama a tu AuthContext
-      navigate('/products');
+      const result = await login(form);
+      if (result?.success) {
+        navigate('/products');
+      } else {
+        setError('Usuario o contraseña incorrectos');
+      }
     } catch (err) {
       console.error(err);
-      setError('Correo o contraseña incorrectos');
+      setError('Ocurrió un error al iniciar sesión.');
     }
   };
 
@@ -27,10 +31,10 @@ const Login = () => {
       <h2 className="text-2xl font-bold mb-4 text-center">Iniciar sesión</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          name="email"
-          type="email"
-          placeholder="Correo electrónico"
-          value={form.email}
+          name="username"
+          type="text"
+          placeholder="Nombre de usuario"
+          value={form.username}
           onChange={handleChange}
           className="w-full border rounded p-3"
           required

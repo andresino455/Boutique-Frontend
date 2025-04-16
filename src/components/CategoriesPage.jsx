@@ -12,8 +12,8 @@ const CategoriesPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('/categories/');
-        setCategories(response.data);
+        const response = await axios.get('/store/categories/');
+        setCategories(response.data.results ?? response.data);
       } catch (err) {
         setError(err.message);
         toast.error('Error al cargar las categorías', {

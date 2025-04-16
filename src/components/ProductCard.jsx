@@ -39,9 +39,8 @@ const ProductCard = ({ product }) => {
 
         {/* Botones rápidos */}
         <div
-          className={`absolute top-2 right-2 flex flex-col gap-2 transition-opacity duration-300 ${
-            isHovered ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute top-2 right-2 flex flex-col gap-2 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'
+            }`}
         >
           <button
             className="bg-white p-2 rounded-full shadow hover:bg-gray-100 transition-colors"
@@ -68,8 +67,8 @@ const ProductCard = ({ product }) => {
           </h2>
         </Link>
 
-        {product.category && (
-          <p className="text-xs text-gray-500 mt-1">{product.category}</p>
+        {product.category?.name && (
+          <p className="text-xs text-gray-500 mt-1">{product.category.name}</p>
         )}
 
         <div className="flex items-center justify-between mt-4">
@@ -85,11 +84,10 @@ const ProductCard = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={!product.stock}
-            className={`p-2 rounded-full transition-colors ${
-              product.stock
+            className={`p-2 rounded-full transition-colors ${product.stock
                 ? 'bg-emerald-100 hover:bg-emerald-600 hover:text-white text-emerald-600'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
+              }`}
           >
             <ShoppingCart size={18} />
           </button>
