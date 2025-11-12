@@ -12,7 +12,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import ProductsPage from './pages/ProductsPage';
 import Orders from './pages/Orders';
 import CategoriesPage from './pages/CategoriesPage';
-
+import Profile from './pages/Profile';
 // Nuevas páginas para roles específicos
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -29,6 +29,7 @@ const App = () => {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/profile" element={<Profile />} />
 
         {/* Rutas públicas protegidas (solo para usuarios no autenticados) */}
         <Route path="/login" element={

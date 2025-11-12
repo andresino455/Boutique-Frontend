@@ -1,8 +1,13 @@
 import { useAuth } from '../../context/AuthContext';
-import { Package, TrendingUp, Users, Star } from 'lucide-react';
+import { Package, TrendingUp, Users, Star, Plus, Search } from 'lucide-react';
+import { useState } from 'react';
+import RegisterSale from './components/RegisterSale/RegisterSale';
+import ProductDetails from './components/ProductDetails/ProductDetails';
 
 const SellerDashboard = () => {
   const { user } = useAuth();
+  const [showRegisterSale, setShowRegisterSale] = useState(false);
+  const [showProductDetails, setShowProductDetails] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -14,6 +19,24 @@ const SellerDashboard = () => {
           <p className="text-gray-600 mt-2">
             Bienvenido, {user?.username}
           </p>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="mb-8 flex space-x-4">
+          <button
+            onClick={() => setShowRegisterSale(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={16} className="mr-2" />
+            Registrar Venta
+          </button>
+          <button
+            onClick={() => setShowProductDetails(true)}
+            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+          >
+            <Search size={16} className="mr-2" />
+            Consultar Producto
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -66,7 +89,15 @@ const SellerDashboard = () => {
           </div>
         </div>
 
-        {/* Aquí puedes agregar más componentes del dashboard de vendedor */}
+        {/* Modales */}
+        <RegisterSale 
+          isOpen={showRegisterSale} 
+          onClose={() => setShowRegisterSale(false)} 
+        />
+        <ProductDetails 
+          isOpen={showProductDetails} 
+          onClose={() => setShowProductDetails(false)} 
+        />
       </div>
     </div>
   );
