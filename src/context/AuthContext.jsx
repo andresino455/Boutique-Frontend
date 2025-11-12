@@ -17,10 +17,19 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = useCallback(async () => {
     try {
       const res = await axios.get('/auth/user/');
-      setUser(res.data);
+      const userData = res.data;
+      
+      // Asegurarnos de que el usuario tenga un rol
+      if (!userData.role) {
+        userData.role = 'customer'; // Valor por defecto
+      }
+      
+      setUser(userData);
+      return userData;
     } catch (err) {
       console.error('[AUTH] Usuario no autenticado:', err.response?.data || err);
       logout(); // Limpiar si token ya no es válido
+      return null;
     }
   }, []);
 
@@ -32,24 +41,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, [accessToken, fetchUser]);
 
-  // Login
-  const login = async ({ username, password }) => {
-    try {
-      const res = await axios.post('/auth/token/', { username, password });
-      const { access } = res.data;
+// Login - Versión corregida
+const login = async ({ username, password }) => {
+  try {
+    const res = await axios.post('/auth/token/', { username, password });
+    const { access } = res.data;
 
-      // Guardar token
-      localStorage.setItem('accessToken', access);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-      setAccessToken(access);
+    // Guardar token
+    localStorage.setItem('accessToken', access);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+    setAccessToken(access);
 
-      await fetchUser();
-      return { success: true };
-    } catch (err) {
-      console.error('[AUTH] Error al iniciar sesión:', err.response?.data || err);
-      return { success: false, message: err.response?.data?.detail || 'Error desconocido' };
-    }
-  };
+    // Esperar a que fetchUser complete y obtener los datos del usuario
+    const userData = await fetchUser();
+    
+    return { 
+      success: true, 
+      user: userData  // ← Ahora userData contiene el usuario con el rol
+    };
+  } catch (err) {
+    console.error('[AUTH] Error al iniciar sesión:', err.response?.data || err);
+    return { 
+      success: false, 
+      message: err.response?.data?.detail || 'Error desconocido' 
+    };
+  }
+};
 
   // Logout
   const logout = () => {
@@ -59,8 +76,42 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
+  // Verificar si el usuario tiene un rol específico
+  const hasRole = (role) => {
+    return user?.role === role;
+  };
+
+  // Verificar si el usuario tiene al menos uno de los roles especificados
+  const hasAnyRole = (roles) => {
+    return roles.includes(user?.role);
+  };
+
+  // Helper functions para roles específicos
+  const checkIsAdmin = () => hasRole('admin');
+  const checkIsSeller = () => hasRole('seller');
+  const checkIsCustomer = () => hasRole('customer');
+
+  const value = {
+    user,
+    login,
+    logout,
+    accessToken,
+    isAuthenticated: !!user,
+    // Funciones de verificación de roles
+    hasRole,
+    hasAnyRole,
+    checkIsAdmin,
+    checkIsSeller,
+    checkIsCustomer,
+    // Propiedades directas para fácil acceso
+    userRole: user?.role || null,
+    isAdmin: user?.role === 'admin',
+    isSeller: user?.role === 'seller',
+    isCustomer: user?.role === 'customer',
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

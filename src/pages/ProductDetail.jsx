@@ -158,8 +158,8 @@ const ProductDetail = () => {
               <div className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
                 {product.stock > 0 ? (
                   <>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-green-700 font-medium">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span className="text-emerald-700 font-medium">
                       {product.stock > 10
                         ? 'En stock'
                         : `Últimas ${product.stock} unidades`}

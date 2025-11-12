@@ -170,7 +170,7 @@ const CheckoutForm = ({
           )}
           
           {formData.paymentMethod === 'paypal' && (
-            <div className="bg-blue-50 p-4 rounded-lg text-center text-blue-800">
+            <div className="bg-emerald-50 p-4 rounded-lg text-center text-emerald-800">
               Serás redirigido a PayPal para completar el pago una vez que confirmes el pedido.
             </div>
           )}
